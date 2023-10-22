@@ -25,7 +25,6 @@ func InitConfig() error {
 	}
 
 	return nil
-
 }
 
 type Tasks struct {

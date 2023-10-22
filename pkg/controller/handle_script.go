@@ -10,9 +10,9 @@ import (
 
 func handleScript(spec *inspectv1alpha1.InspectSpec) error {
 	for _, task := range spec.Tasks {
-		// 这里区分使用脚本还是用户自定义脚本
+		// 这里区分使用镜像还是用户自定义脚本
 		if task.Task.Type == common.ScriptType {
-			// 如果Script字段有值，默认使用用户定义的脚本内容
+			// 如果 Script 字段有值，默认使用用户定义的脚本内容
 			if task.Task.Script != "" {
 				// 固定的脚本镜像
 				err := job.CreateJob(&task.Task, common.ScriptExecuteImage)
@@ -20,7 +20,6 @@ func handleScript(spec *inspectv1alpha1.InspectSpec) error {
 					klog.Error("create job err: ", err)
 					return err
 				}
-
 			} else {
 				// FIXME: 目前就是异步执行，后面controller就管不了
 				go func() {
@@ -31,7 +30,6 @@ func handleScript(spec *inspectv1alpha1.InspectSpec) error {
 					}
 				}()
 			}
-
 		}
 	}
 	return nil

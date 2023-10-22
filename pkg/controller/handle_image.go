@@ -7,6 +7,8 @@ import (
 	"k8s.io/klog/v2"
 )
 
+// handleImage 处理镜像巡检任务
+// 创建 Job 执行任务
 func handleImage(spec *inspectv1alpha1.InspectSpec) error {
 
 	for _, task := range spec.Tasks {
@@ -22,7 +24,5 @@ func handleImage(spec *inspectv1alpha1.InspectSpec) error {
 			go ticker.Start()
 		}
 	}
-
 	return nil
-
 }

@@ -38,7 +38,8 @@ func CreateJob(task *inspectv1alpha1.Task, image string) error {
 			klog.Error("Delete job error: ", err)
 			return err
 		}
-		time.Sleep(time.Second * 60) // 需要等待删除才执行create
+		// NOTE: 需要等待删除才执行create
+		time.Sleep(time.Second * 60)
 		jobResult, err = ClientSet.BatchV1().Jobs("default").Create(context.TODO(), job, metav1.CreateOptions{})
 		if err != nil {
 			klog.Error("Create job error: ", err)
@@ -66,6 +67,7 @@ func getJobTaskName(taskName string, t string) string {
 	return res
 }
 
+// getContainerEnv 放入容器执行过程会用到的环境变量
 func getContainerEnv(task *inspectv1alpha1.Task) []v1.EnvVar {
 	eList := make([]v1.EnvVar, 0)
 	if task.Type == common.ScriptType {
@@ -84,6 +86,7 @@ func getContainerEnv(task *inspectv1alpha1.Task) []v1.EnvVar {
 		Name:  "type",
 		Value: task.Type,
 	}
+	// FIXME: 不要写死，改为动态配置
 	e3 := v1.EnvVar{
 		Name:  "message-operator-url",
 		Value: "http://42.193.17.123:31130/v1/send",
@@ -112,8 +115,8 @@ func getContainerEnv(task *inspectv1alpha1.Task) []v1.EnvVar {
 			eList = append(eList, ePassword)
 			eList = append(eList, eIp)
 		}
-
 	}
+
 	eList = append(eList, e1)
 	eList = append(eList, e2)
 	eList = append(eList, e3)
@@ -151,7 +154,7 @@ func jobSpec(task *inspectv1alpha1.Task, image string) *batchv1.Job {
 				Spec: v1.PodSpec{
 					// containers
 					Containers: []v1.Container{{
-						Name:            "default",
+						Name:            "inspect-container",
 						Image:           image,
 						ImagePullPolicy: v1.PullIfNotPresent,
 						Env:             getContainerEnv(task),

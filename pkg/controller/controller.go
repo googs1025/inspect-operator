@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	inspectv1alpha1 "github.com/myoperator/inspectoperator/pkg/apis/inspect/v1alpha1"
 	"github.com/myoperator/inspectoperator/pkg/sysconfig"
 	corev1 "k8s.io/api/core/v1"
@@ -15,7 +14,8 @@ import (
 
 type InspectController struct {
 	client.Client
-	EventRecorder record.EventRecorder // 事件管理器
+	// EventRecorder 事件管理器
+	EventRecorder record.EventRecorder
 }
 
 func NewInspectController(eventRecorder record.EventRecorder) *InspectController {
@@ -36,16 +36,14 @@ func (r *InspectController) Reconcile(ctx context.Context, req reconcile.Request
 		return reconcile.Result{}, nil
 	}
 	klog.Info(inspect)
-	for _, v := range inspect.Spec.Tasks {
-		fmt.Println(v.Task.RemoteIps)
-	}
-	// 当前正在删
+
+	// FIXME: 需要把 job 也删除
 	if !inspect.DeletionTimestamp.IsZero() {
 		klog.Info("delete the message....")
 		return reconcile.Result{}, nil
 	}
 
-	// 使用CreateOrUpdate处理业务逻辑
+	// 使用 CreateOrUpdate 处理业务逻辑
 	mutateInspectRes, err := controllerutil.CreateOrUpdate(ctx, r.Client, inspect, func() error {
 		// update config
 		err = sysconfig.AppConfig(inspect)
@@ -53,6 +51,7 @@ func (r *InspectController) Reconcile(ctx context.Context, req reconcile.Request
 			r.EventRecorder.Event(inspect, corev1.EventTypeWarning, "UpdateFailed", "update app config fail...")
 			return err
 		}
+
 		// FIXME: 如何解决重复进入的问题
 		klog.Info("is in...?")
 		// 业务逻辑
@@ -87,5 +86,3 @@ func (r *InspectController) InjectClient(c client.Client) error {
 	r.Client = c
 	return nil
 }
-
-// TODO: 删除逻辑并未处理

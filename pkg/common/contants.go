@@ -32,4 +32,5 @@ const (
 	ScriptType            = "script"
 	ImageType             = "image"
 	ScriptExecuteImage    = "inspect-operator/script-engine:v1"
+	RemoteType            = "remote"
 )

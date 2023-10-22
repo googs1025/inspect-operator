@@ -15,7 +15,7 @@ import (
 // Fn 定义函数类型
 type Fn func(taskName string, t string) (bool, error, string)
 
-// MyTickerTask 定时器中的成员
+// MyTickerTask 定时器
 type MyTickerTask struct {
 	MyTick   *time.Ticker
 	Runner   Fn
@@ -37,6 +37,7 @@ func (t *MyTickerTask) Start() {
 	for {
 		select {
 		case <-t.MyTick.C:
+			// 间隔时间就调用 t.Runner，并判断是否退出循环
 			isReStart, err, res := t.Runner(t.TaskName, t.TaskType)
 			if isReStart {
 				continue
@@ -53,7 +54,6 @@ func (t *MyTickerTask) Start() {
 			time.Sleep(time.Second * 3)
 			return
 		}
-
 	}
 }
 
@@ -75,7 +75,7 @@ func GetJobStatus(taskName string, t string) (bool, error, string) {
 	return isReStart, nil, res
 }
 
-// 检查status 返回值：string 代表结果，bool 代表是否还要继续定时执行
+// 检查 status 返回值：string 代表结果，bool 代表是否还要继续定时执行
 func checkStatus(status *batchv1.JobStatus) (string, bool) {
 	if status.Succeeded == 1 {
 		return "succeeded", false

@@ -22,6 +22,7 @@ func main() {
 		klog.Error("decode err:", err)
 		return
 	}
+	// 判断是远程节点还是本地节点
 	if os.Getenv("script_location") == "remote" {
 		err = execute.RunRemoteNode(os.Getenv("user"), os.Getenv("password"), os.Getenv("ip"))
 		if err != nil {
@@ -36,7 +37,5 @@ func main() {
 			return
 		}
 	}
-
-
 	klog.Info("finished script inspect task...")
 }

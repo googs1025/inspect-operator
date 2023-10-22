@@ -19,7 +19,7 @@ func RunLocalNode(script string) error {
 	cmd.Stderr = &stderr // 标准错误
 	err := cmd.Run()
 	outStr, errStr := string(stdout.Bytes()), string(stderr.Bytes())
-	klog.Info("out:\n%s\nerr:\n%s\n", outStr, errStr)
+	klog.Info("out: %s\nerr: %s\n", outStr, errStr)
 	if err != nil {
 		klog.Error("cmd.Run() failed with %s\n", err)
 		return err
