@@ -2,7 +2,6 @@ package decode
 
 import (
 	"fmt"
-	"scriptimage/pkg/execute"
 	"testing"
 )
 
@@ -20,5 +19,5 @@ func TestGenEncodeFile(test *testing.T) {
 		return
 	}
 
-	execute.RunLocalNode("aaa")
+	//execute.RunLocalNode("aaa")
 }

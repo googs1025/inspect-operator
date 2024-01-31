@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	. "github.com/myoperator/inspectoperator/pkg/workload"
+	. "github.com/myoperator/inspectoperator/test/workload"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/klog/v2"

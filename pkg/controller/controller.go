@@ -2,87 +2,78 @@ package controller
 
 import (
 	"context"
+	"fmt"
+	"github.com/go-logr/logr"
 	inspectv1alpha1 "github.com/myoperator/inspectoperator/pkg/apis/inspect/v1alpha1"
-	"github.com/myoperator/inspectoperator/pkg/sysconfig"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/record"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+	"time"
 )
 
 type InspectController struct {
-	client.Client
-	// EventRecorder 事件管理器
-	EventRecorder record.EventRecorder
+	client client.Client
+	Scheme *runtime.Scheme
+	event  record.EventRecorder
+	log    logr.Logger
 }
 
-func NewInspectController(eventRecorder record.EventRecorder) *InspectController {
-	return &InspectController{EventRecorder: eventRecorder}
+func NewInspectController(client client.Client, log logr.Logger, scheme *runtime.Scheme, event record.EventRecorder) *InspectController {
+	return &InspectController{
+		client: client,
+		log:    log,
+		event:  event,
+		Scheme: scheme,
+	}
 }
 
-// Reconcile 调协loop
+// Reconcile 调协 loop
 func (r *InspectController) Reconcile(ctx context.Context, req reconcile.Request) (reconcile.Result, error) {
 
+	klog.Info("start inspect Reconcile..........")
+
+	// load JobFlow by namespace
 	inspect := &inspectv1alpha1.Inspect{}
-	err := r.Get(ctx, req.NamespacedName, inspect)
+	time.Sleep(time.Second)
+	err := r.client.Get(ctx, req.NamespacedName, inspect)
 	if err != nil {
-		if client.IgnoreNotFound(err) != nil {
-			klog.Error("get inspect error: ", err)
-			return reconcile.Result{}, err
+		// If no instance is found, it will be returned directly
+		if errors.IsNotFound(err) {
+			klog.Info(fmt.Sprintf("not found jobFlow : %v", req.Name))
+			return reconcile.Result{}, nil
 		}
-		// 如果未找到的错误，不再进入调协
-		return reconcile.Result{}, nil
-	}
-	klog.Info(inspect)
-
-	// FIXME: 需要把 job 也删除
-	if !inspect.DeletionTimestamp.IsZero() {
-		klog.Info("delete the message....")
-		return reconcile.Result{}, nil
-	}
-
-	// 使用 CreateOrUpdate 处理业务逻辑
-	mutateInspectRes, err := controllerutil.CreateOrUpdate(ctx, r.Client, inspect, func() error {
-		// update config
-		err = sysconfig.AppConfig(inspect)
-		if err != nil {
-			r.EventRecorder.Event(inspect, corev1.EventTypeWarning, "UpdateFailed", "update app config fail...")
-			return err
-		}
-
-		// FIXME: 如何解决重复进入的问题
-		klog.Info("is in...?")
-		// 业务逻辑
-		err = handleImage(&inspect.Spec)
-		if err != nil {
-			klog.Error("handle image error: ", err)
-			r.EventRecorder.Event(inspect, corev1.EventTypeWarning, "RunningFail", "running image task fail...")
-			return err
-		}
-		r.EventRecorder.Event(inspect, corev1.EventTypeNormal, "Running", "running image task...")
-		err = handleScript(&inspect.Spec)
-		if err != nil {
-			klog.Error("handle script error: ", err)
-			r.EventRecorder.Event(inspect, corev1.EventTypeWarning, "RunningFail", "running script task...")
-			return err
-		}
-		r.EventRecorder.Event(inspect, corev1.EventTypeNormal, "Running", "running script task...")
-		return nil
-	})
-	if err != nil {
-		klog.Error("CreateOrUpdate error: ", err)
+		klog.Error(err, err.Error())
+		r.event.Eventf(inspect, corev1.EventTypeWarning, "Created", err.Error())
 		return reconcile.Result{}, err
 	}
 
-	klog.Info("CreateOrUpdate ", "Inspect ", mutateInspectRes)
+	if inspect.Status.Status == inspectv1alpha1.Failed {
+		return reconcile.Result{}, nil
+	}
+
+	// FIXME: 处理 Finalizer 字段
+	// 考虑是否要在 inspect status state 为 Running 时 不能删除？
+
+	// deploy job by dependence order.
+	if err = r.deployInspect(ctx, *inspect); err != nil {
+		klog.Error("deployJob error: ", err)
+		r.event.Eventf(inspect, corev1.EventTypeWarning, "Failed", err.Error())
+		// 如果是 执行 job 任务出错，跳转
+		return reconcile.Result{RequeueAfter: time.Second * 60}, err
+	}
+
+	// update status
+	// 修改 job 狀態，list 出所有相關的 job ，並查看其狀態，並存在 status 中
+	if err = r.updateJobFlowStatus(ctx, inspect); err != nil {
+		klog.Error("update inspect status error: ", err)
+		r.event.Eventf(inspect, corev1.EventTypeWarning, "Failed", err.Error())
+		return reconcile.Result{}, err
+	}
+	klog.Info("end inspect Reconcile........")
 
 	return reconcile.Result{}, nil
-}
-
-// InjectClient 使用controller-runtime 需要注入的client
-func (r *InspectController) InjectClient(c client.Client) error {
-	r.Client = c
-	return nil
 }

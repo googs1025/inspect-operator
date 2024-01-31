@@ -7,8 +7,10 @@ import (
 )
 
 const (
-	InspectGroup   = "api.practice.com"
-	InspectVersion = "v1alpha1"
+	InspectGroup      = "api.practice.com"
+	InspectVersion    = "v1alpha1"
+	InspectKind       = "Inspect"
+	InspectApiVersion = "api.practice.com/v1alpha1"
 )
 
 // SchemeGroupVersion is group version used to register these objects

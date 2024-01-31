@@ -23,7 +23,7 @@ func UnGzip(s string) string {
 	}
 	defer reader.Close()
 
-	res, err := ioutil.ReadAll(reader)
+	res, err := ioutil.ReadAll(readData)
 	if err != nil {
 		klog.Error(err)
 		return ""

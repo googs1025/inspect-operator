@@ -6,7 +6,7 @@ import (
 	"fmt"
 	inspectv1alpha1 "github.com/myoperator/inspectoperator/pkg/apis/inspect/v1alpha1"
 	"github.com/myoperator/inspectoperator/pkg/common"
-	. "github.com/myoperator/inspectoperator/pkg/workload"
+	. "github.com/myoperator/inspectoperator/test/workload"
 	batchv1 "k8s.io/api/batch/v1"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"

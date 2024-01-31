@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/myoperator/inspectoperator/pkg/common"
-	"github.com/myoperator/inspectoperator/pkg/request"
+	"github.com/myoperator/inspectoperator/test/request"
 	"k8s.io/klog/v2"
 	"os/exec"
 )

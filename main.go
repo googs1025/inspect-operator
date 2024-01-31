@@ -4,7 +4,6 @@ import (
 	inspectv1alpha1 "github.com/myoperator/inspectoperator/pkg/apis/inspect/v1alpha1"
 	"github.com/myoperator/inspectoperator/pkg/controller"
 	"github.com/myoperator/inspectoperator/pkg/k8sconfig"
-	"github.com/myoperator/inspectoperator/pkg/sysconfig"
 	_ "k8s.io/code-generator"
 	"k8s.io/klog/v2"
 	"log"
@@ -46,17 +45,13 @@ func main() {
 	}
 
 	// 3. 控制器相关
-	inspectCtl := controller.NewInspectController(mgr.GetEventRecorderFor("inspect-operator"))
+	inspectCtl := controller.NewInspectController(mgr.GetClient(), mgr.GetLogger(),
+		mgr.GetScheme(), mgr.GetEventRecorderFor("inspect-operator"))
 
 	err = builder.ControllerManagedBy(mgr).
 		For(&inspectv1alpha1.Inspect{}).
 		Complete(inspectCtl)
 
-	// 4. 载入业务配置
-	if err = sysconfig.InitConfig(); err != nil {
-		klog.Error(err, "unable to load sysconfig")
-		os.Exit(1)
-	}
 	errC := make(chan error)
 
 	// 5. 启动controller管理器

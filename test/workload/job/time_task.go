@@ -3,8 +3,8 @@ package job
 import (
 	"context"
 	"fmt"
-	"github.com/myoperator/inspectoperator/pkg/request"
-	. "github.com/myoperator/inspectoperator/pkg/workload"
+	"github.com/myoperator/inspectoperator/test/request"
+	. "github.com/myoperator/inspectoperator/test/workload"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -83,5 +83,4 @@ func checkStatus(status *batchv1.JobStatus) (string, bool) {
 		return "failed", false
 	}
 	return "", true
-
 }

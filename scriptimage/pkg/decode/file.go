@@ -8,10 +8,10 @@ import (
 	"scriptimage/pkg/common"
 )
 
-// 生成脚本GenEncodeFile
+// GenEncodeFile 生成脚本
 func GenEncodeFile() error {
 	path := common.GetWd()
-	f, err := os.OpenFile(path + common.ScriptFile, os.O_RDWR|os.O_CREATE, 0777)
+	f, err := os.OpenFile(path+common.ScriptFile, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
 		return err
 	}
@@ -39,22 +39,20 @@ func GenEncodeFile() error {
 	return nil
 }
 
-
-
+// WriteStringToFile 把脚本内容写入文件
 func WriteStringToFile(script string) error {
 	path := common.GetWd()
-	dstFile,err := os.Create(path + common.ScriptFile)
-	if err!=nil{
+	dstFile, err := os.Create(path + common.ScriptFile)
+	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
 	defer dstFile.Close()
 
 	_, err = dstFile.WriteString(script + "\n")
-	if err!=nil{
+	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
-
 	return nil
 }

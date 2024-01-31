@@ -13,7 +13,7 @@ import (
 func RunLocalNode() error {
 	path := common.GetWd()
 	// 修正镜像没有bash
-	cmd := exec.Command("sh", path + common.ScriptFile)
+	cmd := exec.Command("sh", path+common.ScriptFile)
 	var stdout, stderr bytes.Buffer
 	cmd.Stdout = &stdout // 标准输出
 	cmd.Stderr = &stderr // 标准错误
@@ -28,8 +28,8 @@ func RunLocalNode() error {
 	}
 	klog.Info("finish to send the script message...")
 	// FIXME: 这里不能写死。
-	request.Post(os.Getenv("message-operator-url"),
-		fmt.Sprintf("execute bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
+	//request.Post(os.Getenv("message-operator-url"),
+	//	fmt.Sprintf("execute bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
 
 	return nil
 }

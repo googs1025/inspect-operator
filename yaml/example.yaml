@@ -4,58 +4,55 @@ metadata:
   name: myinspect
 spec:
   tasks:
-    - task:
-        task_name: task1
-        type: script             # type 字段：可填写脚本或镜像 image script 两种
-        source: test.sh          # source 字段：可执行 是 "bash 脚本","py 脚本"或是"镜像"。需要把东西放入./script中
-        script_location: local   # script_location 字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
-        # 选取 local 本地节点 就不需要再填写远端 ip 地址
-        # 远端要执行的目标 node
-        # script字段：可填写 bash 脚本内容，controller 默认如果有 script字段，优先执行自定义脚本内容，"不执行 "source 字段脚本内容
-        script: |
-          # 检查是否有CPU降频
-          count=0
-          for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
-          do
-              if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
-              then
-                  count=`expr $count + 1`
-              fi
-          done
-          if [ $count -gt 0 ]
-          then
-              echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
-          else
-              echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
-          fi
-    - task:
-        task_name: task2
-        type: image
-        source: try:latest  # source 字段：镜像名称
-        restart: true       # 用于标示是否重新执行。
-#    - task:
-#        task_name: task3
-#        type: script             # type字段：可填写脚本或镜像 image script 两种
-#        script_location: remote   # script_location字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
-#        # 远端要执行的目标node的信息：user password ip等
-#        remote_ips:
-#          - user: "root"
-#            password: "googs1025Aa1234567"
-#            ip: "1.14.120.233"
-#        script: |
-#          # 检查是否有CPU降频
-#          count=0
-#          for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
-#          do
-#              if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
-#              then
-#                  count=`expr $count + 1`
-#              fi
-#          done
-#          if [ $count -gt 0 ]
-#          then
-#              echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
-#          else
-#              echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
-#          fi
+    - task_name: task1
+      type: script             # type 字段：可填写脚本或镜像 image script 两种
+      source: test.sh          # source 字段：可执行 是 "bash 脚本","py 脚本"或是"镜像"。需要把东西放入./script中
+      script_location: local   # script_location 字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
+      # 选取 local 本地节点 就不需要再填写远端 ip 地址
+      # 远端要执行的目标 node
+      # script字段：可填写 bash 脚本内容，controller 默认如果有 script字段，优先执行自定义脚本内容，"不执行 "source 字段脚本内容
+      script: |
+        # 检查是否有CPU降频
+        count=0
+        for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
+        do
+            if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
+            then
+                count=`expr $count + 1`
+            fi
+        done
+        if [ $count -gt 0 ]
+        then
+            echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
+        else
+            echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
+        fi
+    - task_name: task2
+      type: image
+      source: try:latest  # source 字段：镜像名称
+      restart: true       # 用于标示是否重新执行。
+    - task_name: task3
+      type: script             # type字段：可填写脚本或镜像 image script 两种
+      script_location: remote   # script_location字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
+      # 远端要执行的目标node的信息：user password ip等
+      remote_ips:
+        - user: "root"
+          password: "googs1025Aa1234567"
+          ip: "1.14.120.233"
+      script: |
+        # 检查是否有CPU降频
+        count=0
+        for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
+        do
+            if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
+            then
+                count=`expr $count + 1`
+            fi
+        done
+        if [ $count -gt 0 ]
+        then
+            echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
+        else
+            echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
+        fi
 

@@ -39,7 +39,6 @@ func sSHConnect(user, password, host string, port int) (*ssh.Session, error) {
 		HostKeyCallback: hostKeyCallback,
 	}
 
-
 	// connect to ssh
 	addr = fmt.Sprintf("%s:%d", host, port)
 
@@ -89,9 +88,8 @@ func RunRemoteNode(username, password, host string) error {
 	}
 
 	klog.Info("\nout:\n", outStr, "err:\n", errStr)
-	request.Post(os.Getenv("message-operator-url"),
-		fmt.Sprintf("execute remote node bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
-
+	//request.Post(os.Getenv("message-operator-url"),
+	//	fmt.Sprintf("execute remote node bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
 
 	return nil
 }

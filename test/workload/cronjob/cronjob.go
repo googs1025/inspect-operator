@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/myoperator/inspectoperator/pkg/common"
 	"github.com/myoperator/inspectoperator/pkg/sysconfig"
-	. "github.com/myoperator/inspectoperator/pkg/workload"
+	. "github.com/myoperator/inspectoperator/test/workload"
 	batchv1 "k8s.io/api/batch/v1"
 	"k8s.io/api/batch/v1beta1"
 	v1 "k8s.io/api/core/v1"
