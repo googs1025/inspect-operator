@@ -1,17 +1,15 @@
-package decode
+package execute
 
 import (
 	"io"
 	"io/ioutil"
 	"k8s.io/klog/v2"
 	"os"
-	"scriptimage/pkg/common"
 )
 
 // GenEncodeFile 生成脚本
-func GenEncodeFile() error {
-	path := common.GetWd()
-	f, err := os.OpenFile(path+common.ScriptFile, os.O_RDWR|os.O_CREATE, 0777)
+func (sc *ScriptExecutor) GenEncodeFile() error {
+	f, err := os.OpenFile(sc.Path, os.O_RDWR|os.O_CREATE, 0777)
 	if err != nil {
 		return err
 	}
@@ -21,8 +19,9 @@ func GenEncodeFile() error {
 	if err != nil {
 		return err
 	}
-	decode := UnGzip(string(b)) //反解 之后的 字符串 ,重新写入
-	err = f.Truncate(0)         //清空文件1
+	//反解 之后的 字符串 ,重新写入
+	decode := DecodeBase64(string(b))
+	err = f.Truncate(0) //清空文件1
 	if err != nil {
 		return err
 	}
@@ -40,16 +39,15 @@ func GenEncodeFile() error {
 }
 
 // WriteStringToFile 把脚本内容写入文件
-func WriteStringToFile(script string) error {
-	path := common.GetWd()
-	dstFile, err := os.Create(path + common.ScriptFile)
+func (sc *ScriptExecutor) WriteStringToFile() error {
+	dstFile, err := os.Create(sc.Path)
 	if err != nil {
 		klog.Error(err.Error())
 		return err
 	}
 	defer dstFile.Close()
 
-	_, err = dstFile.WriteString(script + "\n")
+	_, err = dstFile.WriteString(sc.Script + "\n")
 	if err != nil {
 		klog.Error(err.Error())
 		return err

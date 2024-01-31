@@ -66,7 +66,7 @@ type Task struct {
 	// ScriptLocation 脚本执行地点：本节点或远端节点
 	ScriptLocation string `json:"script_location"`
 	// RemoteInfos 远端局点信息列表
-	RemoteInfos []RemoteInfo `json:"remote_ips"`
+	RemoteInfos []RemoteInfo `json:"remote_infos"`
 }
 
 const (

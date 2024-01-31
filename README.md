@@ -17,66 +17,65 @@ metadata:
   name: myinspect
 spec:
   tasks:
-    - task:
-        task_name: task1
-        type: script             # type 字段：可填写脚本或镜像 image script 两种
-        source: test.sh          # source 字段：可执行 是 bash 脚本 py 脚本或是镜像。需要把东西放入 ./script 中
-        script_location: local   # script_location 字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
-        # 选取 local 本地节点 就不需要再填写远端 ip 地址
-        # 远端要执行的目标 node
-        # script 字段：可填写 bash 脚本内容，controller 默认如果有 script 字段，优先执行自定义脚本内容，"不执行" source 字段脚本内容
-        script: |
-          # 检查是否有CPU降频
-          count=0
-          for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
-          do
-              if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
-              then
-                  count=`expr $count + 1`
-              fi
-          done
-          if [ $count -gt 0 ]
-          then
-              echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
-          else
-              echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
+    - task_name: task1
+      type: script             # type 字段：可填写脚本或镜像 image script 两种
+      script_location: local   # script_location 字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
+      # script字段：可填写 bash 脚本内容
+      script: |
+        #!/bin/bash
+        # 获取内存使用率的函数
+          get_memory_usage() {
+          # 使用free命令获取内存信息，第二行的第三列为已使用的内存值
+          total_memory=$(free | awk 'NR==2 {print $2}')
+          used_memory=$(free | awk 'NR==2 {print $3}')
+          # 计算内存使用率
+          memory_usage=$(awk "BEGIN {printf \"%.2f\", $used_memory / $total_memory * 100}")
+          echo $memory_usage
+         }
+          # 检查内存使用率是否超过80%
+          memory_usage=$(get_memory_usage)
+          echo "当前内存使用率: $memory_usage%"
+
+          if (( $(echo "$memory_usage > 80" | bc -l) )); then
+          echo "内存使用率超过80%！"
+          # 在此处可以添加额外的操作，如发送警报通知等。
           fi
-    - task:
-        task_name: task2
-        type: image
-        source: try:latest  # source 字段：镜像名称
-        restart: true       # 用于标示是否重新执行。 如
-    - task:
-        task_name: task3
-        type: script             # type 字段：可填写脚本或镜像 image script 两种
-        script_location: remote   # script_location 字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点
-        # 远端要执行的目标 node 的信息：user password ip 等
-        remote_ips:
-          - user: "root"
-            password: "xxxxxx"
-            ip: "xxxxxx"
-        script: |
-          # 检查是否有CPU降频
-          count=0
-          for cpuHz in $(cat /proc/cpuinfo | grep MHz | awk '{print $4}')
-          do
-              if [ `echo "$cpuHz < 2000.0" |bc` -eq 1 ]
-              then
-                  count=`expr $count + 1`
-              fi
-          done
-          if [ $count -gt 0 ]
-          then
-              echo caseName:无CPU降频, caseDesc:, result:fail, resultDesc:有${count}个CPU的频率低于2000MHz, 可能发生降频
-          else
-              echo caseName:无CPU降频, caseDesc:, result:success, resultDesc:CPU频率都大于2000MHz, 无降频
+    - task_name: task2
+      type: image
+      source: try:latest  # source 字段：镜像名称
+    - task_name: task3
+      type: script             # type字段：可填写脚本或镜像 image script 两种
+      script_location: remote  # script_location字段：可选填 local remote，分别对应 本地节点 远端节点
+      # 远端要执行的目标node的信息：user password ip 等
+      remote_infos:
+        - user: "root"
+          password: "googs1025Aa"
+          ip: "1.14.120.233"
+      script: |
+        #!/bin/bash
+        # 获取内存使用率的函数
+          get_memory_usage() {
+          # 使用free命令获取内存信息，第二行的第三列为已使用的内存值
+          total_memory=$(free | awk 'NR==2 {print $2}')
+          used_memory=$(free | awk 'NR==2 {print $3}')
+          # 计算内存使用率
+          memory_usage=$(awk "BEGIN {printf \"%.2f\", $used_memory / $total_memory * 100}")
+          echo $memory_usage
+        }
+
+        # 检查内存使用率是否超过80%
+          memory_usage=$(get_memory_usage)
+        echo "当前内存使用率: $memory_usage%"
+
+          if (( $(echo "$memory_usage > 80" | bc -l) )); then
+          echo "内存使用率超过80%！"
+          # 在此处可以添加额外的操作，如发送警报通知等。
           fi
 ```
 - 创建 script 巡检任务需要的镜像(内置镜像)
 ```bash
-[root@VM-0-16-centos inspectoperator]# cd scriptimage/
-[root@VM-0-16-centos scriptimage]# docker build -t inspect-operator/script-engine:v1 .
-Sending build context to Docker daemon   29.7kB
+[root@VM-0-16-centos inspectoperator]# ./build_engine.sh
+Sending build context to Docker daemon  35.33kB
 Step 1/18 : FROM golang:1.18.7-alpine3.15 as builder
  ---> 33c97f935029
 Step 2/18 : WORKDIR /app
@@ -84,14 +83,13 @@ Step 2/18 : WORKDIR /app
  ---> 8cc02fd966d4
 Step 3/18 : COPY go.mod go.mod
  ---> Using cache
- ---> 6e1bcad7a69d
-Step 4/18 : COPY go.sum go.sum
- ---> Using cache
+ ---> 4b7680d53e60
 ```
-- 创建自定义镜像(以 try:v1 为例) [参考 try 目录](./test/try)
+
+- 创建自定义镜像(以 try:v1 为例) [参考 try 目录](example/try)
 ```bash
 [root@VM-0-16-centos try]# pwd
-/root/inspectoperator/test/try
+/root/inspectoperator/example/try
 [root@VM-0-16-centos try]# docker build -t try:v1 .
 Sending build context to Docker daemon  1.865MB
 Step 1/8 : FROM golang:1.17

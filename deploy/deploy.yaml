@@ -17,22 +17,14 @@ spec:
       serviceAccountName: myinspect-sa # 配置service account
       containers:
         - name: myinspect
-          image: alpine:3.12
+          image: inspectoperator:v1
           imagePullPolicy: IfNotPresent
           env:
             - name: "Release"
               value: "1"
-          workingDir: "/app"
           command: ["./myinspectoperator"]
-          volumeMounts:
-            - name: app
-              mountPath: /app
           ports:
             - containerPort: 80
-      volumes:
-        - name: app
-          hostPath:
-            path: /root/inspectoperator
 ---
 apiVersion: v1
 kind: Service

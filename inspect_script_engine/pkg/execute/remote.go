@@ -1,19 +1,37 @@
 package execute
 
 import (
-	"bytes"
 	"fmt"
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
 	"io"
 	"k8s.io/klog/v2"
-	"log"
 	"net"
 	"os"
 	"path"
 	"scriptimage/pkg/common"
-	"scriptimage/pkg/request"
 )
+
+// RunRemoteNode 远端节点执行脚本任务
+func (sc *ScriptExecutor) RunRemoteNode() error {
+
+	session, err := sSHConnect(sc.NodeInfo.User, sc.NodeInfo.Password, sc.NodeInfo.Ip, 22)
+	if err != nil {
+		klog.Error("ssh connect error: ", err)
+		return err
+	}
+	defer session.Close()
+
+	session.Stdout = &sc.StdOut
+	session.Stderr = &sc.StdErr
+
+	err = session.Run(fmt.Sprintf("sh %v", "./script.sh"))
+	if err != nil {
+		klog.Error("cmd.Run() failed with: ", err)
+		return err
+	}
+	return nil
+}
 
 func sSHConnect(user, password, host string, port int) (*ssh.Session, error) {
 	var (
@@ -47,6 +65,7 @@ func sSHConnect(user, password, host string, port int) (*ssh.Session, error) {
 		return nil, err
 	}
 
+	// 拷贝到远端局点中
 	err = ScpScriptToRemoteNode(client)
 	if err != nil {
 		klog.Error("scp script to remote node error: ", err)
@@ -60,38 +79,6 @@ func sSHConnect(user, password, host string, port int) (*ssh.Session, error) {
 	}
 
 	return session, nil
-}
-
-// RunRemoteNode 远端节点执行脚本任务
-func RunRemoteNode(username, password, host string) error {
-	var stdOut, stdErr bytes.Buffer
-
-	session, err := sSHConnect(username, password, host, 22)
-	if err != nil {
-		log.Fatal("ssh connect error: ", err)
-		return err
-	}
-	defer session.Close()
-
-	session.Stdout = &stdOut
-	session.Stderr = &stdErr
-
-	cmd := fmt.Sprintf("sh %v", "./script.sh")
-
-	err = session.Run(cmd)
-	outStr, errStr := string(stdOut.Bytes()), string(stdErr.Bytes())
-	if err != nil {
-		klog.Error("cmd.Run() failed with: ", err)
-		request.Post(os.Getenv("message-operator-url"),
-			fmt.Sprintf("execute remote node bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
-		return err
-	}
-
-	klog.Info("\nout:\n", outStr, "err:\n", errStr)
-	//request.Post(os.Getenv("message-operator-url"),
-	//	fmt.Sprintf("execute remote node bash script"), fmt.Sprintf("res: %v, err: %v", outStr, errStr))
-
-	return nil
 }
 
 // ScpScriptToRemoteNode 复制脚本到远端局点上
