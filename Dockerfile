@@ -20,8 +20,6 @@ RUN go mod download
 COPY main.go main.go
 COPY script script
 COPY pkg/ pkg/
-COPY app.yaml app.yaml
-RUN chmod 777 ./app.yaml
 # Build
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o myinspectoperator main.go
 
@@ -30,9 +28,7 @@ FROM alpine:3.12
 WORKDIR /app
 # 需要的文件需要复制过来
 COPY --from=builder /app/myinspectoperator .
-COPY --from=builder /app/app.yaml .
 COPY --from=builder /app/script /app/script
-RUN chmod 777 /app/app.yaml
 RUN chmod 777 /app/script
 USER 65532:65532
 

@@ -2,12 +2,29 @@
 # This is a YAML-formatted file.
 # Declare variables to be passed into your templates.
 
-replicaCount: 1
-name: myinspect-controller
-namespace: default
-serviceName: myinspect-svc
-image: inspectoperator:v1
+# 基础配置
+base:
+  # 副本数
+  replicaCount: 1
+  # 应用名或 namespace
+  name: myinspect-controller
+  namespace: default
+  serviceName: myinspect-svc
+  # 镜像名
+  image: inspectoperator:v1
 
+service:
+  type: NodePort
+  ports:
+    - port: 10089
+      nodePort: 31111
+
+# 用于创建 rbac 使用
+rbac:
+  serviceaccountname: myinspect-sa
+  namespace: default
+  clusterrole: myinspect-clusterrole
+  clusterrolebinding: myinspect-ClusterRoleBinding
 
 imagePullSecrets: []
 nameOverride: ""
@@ -34,11 +51,6 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-service:
-  type: NodePort
-  ports:
-    - port: 10089
-      nodePort: 31111
 
 
 resources: {}

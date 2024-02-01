@@ -8,9 +8,12 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/record"
+	"k8s.io/client-go/util/workqueue"
 	"k8s.io/klog/v2"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"time"
 )
@@ -76,4 +79,29 @@ func (r *InspectController) Reconcile(ctx context.Context, req reconcile.Request
 	klog.Info("end inspect Reconcile........")
 
 	return reconcile.Result{}, nil
+}
+
+func (r *InspectController) OnUpdateJobHandlerByInspect(event event.UpdateEvent, limitingInterface workqueue.RateLimitingInterface) {
+	for _, ref := range event.ObjectNew.GetOwnerReferences() {
+		if ref.Kind == inspectv1alpha1.InspectKind && ref.APIVersion == inspectv1alpha1.InspectApiVersion {
+			// 重新放入 Reconcile 调协方法
+			limitingInterface.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{
+					Name: ref.Name, Namespace: event.ObjectNew.GetNamespace(),
+				},
+			})
+		}
+	}
+}
+
+func (r *InspectController) OnDeleteJobHandlerByInspect(event event.DeleteEvent, limitingInterface workqueue.RateLimitingInterface) {
+	for _, ref := range event.Object.GetOwnerReferences() {
+		if ref.Kind == inspectv1alpha1.InspectKind && ref.APIVersion == inspectv1alpha1.InspectApiVersion {
+			// 重新入列
+			klog.Info("delete pod: ", event.Object.GetName(), event.Object.GetObjectKind())
+			limitingInterface.Add(reconcile.Request{
+				NamespacedName: types.NamespacedName{Name: ref.Name,
+					Namespace: event.Object.GetNamespace()}})
+		}
+	}
 }

@@ -45,6 +45,7 @@ rules:
       - update
       - delete
       - patch
+      - watch
   - apiGroups:
       - batch
     resources:
@@ -56,6 +57,7 @@ rules:
       - update
       - delete
       - patch
+      - watch
   - apiGroups:
       - networking.k8s.io
     resources:

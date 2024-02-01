@@ -1,25 +1,25 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.name }}
-  namespace: {{ .Values.namespace }}
+  name: {{ .Values.base.name }}
+  namespace: {{ .Values.base.namespace }}
   labels:
-    app: {{ .Values.name }}
+    app: {{ .Values.base.name }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ .Values.base.replicaCount }}
   selector:
     matchLabels:
-      app: {{ .Values.name }}
+      app: {{ .Values.base.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.name }}
+        app: {{ .Values.base.name }}
     spec:
       serviceAccountName: myinspect-sa
       nodeName: vm-0-16-centos
       containers:
-        - name: {{ .Values.name }}
-          image: "{{ .Values.image }}"
+        - name: {{ .Values.base.name }}
+          image: "{{ .Values.base.image }}"
           imagePullPolicy: IfNotPresent
           env:
             - name: "Release"

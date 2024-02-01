@@ -5,7 +5,7 @@
 思路：当应用启动后，会启动一个 controller，controller 会监听所需的资源，并执行相应的业务逻辑(如：执行巡检脚本或镜像，再使用集群内的消息中心进行通知)。
 
 ### 项目功能
-1. 支持对集群内使用 job 执行用户自定义镜像内容功能(用户必须完成 image 开发部分，可参考 test/try 目录)。
+1. 支持对集群内使用 job 执行用户自定义镜像内容功能(用户必须完成 image 开发部分，可参考 example/try 目录)。
 2. 支持对本地节点执行 bash 脚本功能，其中提供内置巡检 bash 脚本或用户可自定义 bash 脚本内容。
 3. 提供发送结果通知功能(使用集群内消息中心 operator 实现)。
 
@@ -14,6 +14,7 @@
 apiVersion: api.practice.com/v1alpha1
 kind: Inspect
 metadata:
+  # 这里可以设置为某业务方的巡检任务
   name: myinspect
 spec:
   tasks:

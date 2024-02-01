@@ -4,15 +4,18 @@ import (
 	inspectv1alpha1 "github.com/myoperator/inspectoperator/pkg/apis/inspect/v1alpha1"
 	"github.com/myoperator/inspectoperator/pkg/controller"
 	"github.com/myoperator/inspectoperator/pkg/k8sconfig"
+	batchv1 "k8s.io/api/batch/v1"
 	_ "k8s.io/code-generator"
 	"k8s.io/klog/v2"
 	"log"
 	"os"
 	"sigs.k8s.io/controller-runtime/pkg/builder"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
 	"sigs.k8s.io/controller-runtime/pkg/manager/signals"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"time"
 )
 
@@ -50,7 +53,12 @@ func main() {
 
 	err = builder.ControllerManagedBy(mgr).
 		For(&inspectv1alpha1.Inspect{}).
-		Complete(inspectCtl)
+		Watches(&source.Kind{Type: &batchv1.Job{}},
+			handler.Funcs{
+				UpdateFunc: inspectCtl.OnUpdateJobHandlerByInspect,
+				DeleteFunc: inspectCtl.OnDeleteJobHandlerByInspect,
+			},
+		).Complete(inspectCtl)
 
 	errC := make(chan error)
 
