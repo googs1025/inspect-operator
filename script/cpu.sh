@@ -1,8 +1,13 @@
+#!/bin/bash
 # 检查cpu的空闲率是否小于20%
-cpuCount=$[$(vmstat -SM | awk '{if ($15 < 20) print $0}' | wc -l)-1]
-if [ $cpuCount -gt 0 ]
-then
-    echo caseName:cpu的使用率小于80%, caseDesc:, result:fail, resultDesc:有${cpuCount}个cpu的使用率大于80%
+
+# 使用 mpstat 命令获取 CPU 使用率信息（每一秒采样一次，持续两秒）
+cpu_usage=$(mpstat 1 2 | awk '/Average:/ {print $NF}')
+
+# 检查 CPU 使用率是否小于 80%
+if (( $(echo "$cpu_usage < 80" | bc -l) )); then
+  echo "CPU 使用率小于 80%！"
+  echo "当前使用率: $cpu_usage%"
 else
-    echo caseName:cpu的使用率小于80%, caseDesc:, result:success, resultDesc:cpu的使用率都小于80%
+  echo "CPU 使用率正常。"
 fi

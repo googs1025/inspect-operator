@@ -58,7 +58,12 @@ func main() {
 				UpdateFunc: inspectCtl.OnUpdateJobHandlerByInspect,
 				DeleteFunc: inspectCtl.OnDeleteJobHandlerByInspect,
 			},
-		).Complete(inspectCtl)
+		).Watches(&source.Kind{Type: &batchv1.CronJob{}},
+		handler.Funcs{
+			UpdateFunc: inspectCtl.OnUpdateCronJobHandlerByInspect,
+			DeleteFunc: inspectCtl.OnDeleteCronHandlerByInspect,
+		},
+	).Complete(inspectCtl)
 
 	errC := make(chan error)
 

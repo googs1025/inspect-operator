@@ -21,6 +21,10 @@ type Inspect struct {
 }
 
 type InspectSpec struct {
+	// Type 巡检任务类型: jobs or cronjobs
+	Type string `json:"type" default:"jobs"`
+	// Schedule 调度时间
+	Schedule string `json:"schedule" default:""`
 	// GlobalParameters 全局参数
 	GlobalParams GlobalParams `json:"globalParams"`
 	// Tasks 任务列表
@@ -44,7 +48,9 @@ type InspectStatus struct {
 	// Status 巡检任务状态
 	Status string `json:"status"`
 	// 记录执行的 job 状态
-	Results map[string]v1.JobStatus `json:"results"`
+	JobResults map[string]v1.JobStatus `json:"jobResults"`
+	// 记录执行的 job 状态
+	CronJobResults map[string]v1.CronJobStatus `json:"cronJobResults"`
 }
 
 // RemoteInfo 登入远端局点需要的信息
@@ -71,10 +77,16 @@ type Task struct {
 
 const (
 	Succeed     = "Succeed"     // 代表 JobFlow 中所有 Job 都執行成功
+	CronExecute = "CronExecute" // 代表 JobFlow 中所有 Job 都執行成功
 	Terminating = "Terminating" // 代表 JobFlow 正在被刪除
 	Failed      = "Failed"      // 代表 JobFlow 執行失敗
 	Running     = "Running"     // 代表 JobFlow 有任何一個 Job 正在執行
 	Pending     = "Pending"     // 代表 JobFlow 正在等待
+)
+
+const (
+	CronJobsType = "cronjobs" // 代表 JobFlow 有任何一個 Job 正在執行
+	JobsType     = "jobs"     // 代表 JobFlow 正在等待
 )
 
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object

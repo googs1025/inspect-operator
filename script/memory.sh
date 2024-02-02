@@ -1,12 +1,19 @@
-# 检查内存的空闲率是否大于20%
-a=`cat /proc/meminfo | sed -n '/MemAvailable/p'| awk '{print $2}'`;
-t=`cat /proc/meminfo | sed -n '/MemTotal/p'| awk '{print $2}'`;
-r=`echo "scale=4; ( $a / $t) * 100" | bc`;
-echo -e "FreeMem Ratio (%): $r"
+#!/bin/bash
+# 检查内存的空闲率是否大于80%
 
-if [ `echo ${r} | awk -v tem=20 '{print($1>tem)? "1":"0"}'` -eq "0" ]
-then
-    echo caseName:内存的使用率小于80%, caseDesc:, result:fail, resultDesc:内存的使用率大于80%
+# 从 /proc/meminfo 文件中提取内存信息
+mem_info=$(grep -E 'MemTotal|MemAvailable' /proc/meminfo)
+
+# 提取内存总量和可用内存
+total_mem=$(echo "$mem_info" | awk '{print $2}')
+available_mem=$(echo "$mem_info" | awk '{print $2}')
+
+# 计算内存使用率
+usage_percentage=$(( (total_mem - available_mem) * 100 / total_mem ))
+
+# 检查使用率是否大于 80%
+if [ "$usage_percentage" -gt 80 ]; then
+  echo "内存使用率超过 80%！"
 else
-    echo caseName:内存的使用率小于80%, caseDesc:, result:success, resultDesc:内存的使用率小于80%
+  echo "内存使用率正常。"
 fi
