@@ -43,7 +43,6 @@ func (r *InspectController) deployInspect(ctx context.Context, inspect inspectv1
 		// 如果没拿到这个 job
 		if err := r.client.Get(ctx, namespacedNameJob, job); err != nil {
 			if errors.IsNotFound(err) {
-				// 判斷 job 是否有 Dependencies，
 				// 如果沒有，直接創建，如果有，則要判斷 Dependencies 中的 job 是否已經成功
 				if err = r.client.Create(ctx, job); err != nil {
 					if errors.IsAlreadyExists(err) {
@@ -72,6 +71,7 @@ func (r *InspectController) updateJobFlowStatus(ctx context.Context, inspect *in
 	if inspect.Spec.Type == "" {
 		inspect.Spec.Type = inspectv1alpha1.JobsType
 	}
+	// 处理 jobs or cronjobs
 	if inspect.Spec.Type == inspectv1alpha1.JobsType {
 		// 获取 job 列表
 		allJobList := new(batchv1.JobList)
@@ -414,7 +414,7 @@ func (r *InspectController) getAllCronJobStatus(inspect *inspectv1alpha1.Inspect
 		a := fmt.Sprintf("%s/%s", job.Name, job.Namespace)
 		inspectStatus.CronJobResults[a] = job.Status
 
-		// 根据 cronjob 字段 遍例寻找
+		// 根据 cronjob 字段 遍历寻找 job
 		for _, v := range inspectStatus.CronJobResults {
 			active := v
 			for _, j := range active.Active {

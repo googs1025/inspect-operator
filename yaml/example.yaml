@@ -33,8 +33,7 @@ spec:
           fi
     - task_name: task2
       type: image
-      source: try:latest  # source 字段：镜像名称
-      restart: true       # 用于标示是否重新执行。
+      source: try:v1      # source 字段：镜像名称
     - task_name: task3
       type: script             # type字段：可填写脚本或镜像 image script 两种
       script_location: remote  # script_location字段(目前未支持此功能) 可选填 local remote all 三种，分别对应 本地节点 远端节点 全部节点

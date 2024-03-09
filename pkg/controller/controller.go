@@ -61,7 +61,6 @@ func (r *InspectController) Reconcile(ctx context.Context, req reconcile.Request
 	// FIXME: 处理 Finalizer 字段
 	// 考虑是否要在 inspect status state 为 Running 时 不能删除？
 
-	// deploy job by dependence order.
 	if err = r.deployInspect(ctx, *inspect); err != nil {
 		klog.Error("deployJob error: ", err)
 		r.event.Eventf(inspect, corev1.EventTypeWarning, "Failed", err.Error())

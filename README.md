@@ -47,7 +47,7 @@ spec:
           fi
     - task_name: task2
       type: image
-      source: try:latest  # source 字段：镜像名称
+      source: try:v1  # source 字段：镜像名称
     - task_name: task3
       type: script             # type字段：可填写脚本或镜像 image script 两种
       script_location: remote  # script_location字段：可选填 local remote，分别对应 本地节点 远端节点
@@ -78,6 +78,7 @@ spec:
           fi
 ```
 - 创建 script 巡检任务需要的镜像(内置镜像)
+- 创建 operator 镜像
 ```bash
 [root@VM-0-16-centos inspectoperator]# ./build_engine.sh
 Sending build context to Docker daemon  35.33kB
@@ -89,6 +90,21 @@ Step 2/18 : WORKDIR /app
 Step 3/18 : COPY go.mod go.mod
  ---> Using cache
  ---> 4b7680d53e60
+[root@VM-0-16-centos inspectoperator]# docker build -t inspectoperator:v1 .
+Sending build context to Docker daemon  2.365MB
+Step 1/18 : FROM golang:1.18.7-alpine3.15 as builder
+ ---> 33c97f935029
+Step 2/18 : WORKDIR /app
+ ---> Using cache
+ ---> 8cc02fd966d4
+Step 3/18 : COPY go.mod go.mod
+ ---> Using cache
+ ---> f79d7a8c6a39
+Step 4/18 : COPY go.sum go.sum
+ ---> Using cache
+ ---> da49d43e8739
+Step 5/18 : ENV GOPROXY=https://goproxy.cn,direct
+ ---> Using cache
 ```
 
 - 创建自定义镜像(以 try:v1 为例) [参考 try 目录](example/try)
